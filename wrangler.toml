@@ -1,0 +1,9 @@
+name = "ai-risk-checker"
+compatibility_date = "2024-01-01"
+
+[assets]
+directory = "./dist/public"
+binding = "ASSETS"
+
+[assets.not_found_handling]
+not_found_handling = "single-page-application"
