@@ -16,6 +16,7 @@ import Dashboard from "./pages/Dashboard";
 import History from "./pages/History";
 import Profiles from "./pages/Profiles";
 import Export from "./pages/Export";
+import PolicySources from "./pages/PolicySources";
 
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
       <Route path={"/history"} component={History} />
       <Route path={"/profiles"} component={Profiles} />
       <Route path={"/export"} component={Export} />
+      <Route path={"/sources"} component={PolicySources} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

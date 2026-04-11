@@ -19,6 +19,7 @@ export function MainNavigation() {
     { label: 'History', path: '/history' },
     { label: 'Profiles', path: '/profiles' },
     { label: 'Export', path: '/export' },
+    { label: 'Policy Sources', path: '/sources' },
   ];
 
   const isActive = (path: string) => location === path;

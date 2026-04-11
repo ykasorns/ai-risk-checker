@@ -1,5 +1,5 @@
 import { AIVersion, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { RiskMeter } from './RiskMeter';
 import { ComplianceRecommendations } from './ComplianceRecommendations';
@@ -61,6 +61,19 @@ export function AIVersionCard({ version }: AIVersionCardProps) {
           <span className="text-gray-600 font-medium">Encryption:</span>
           <span className="text-gray-900">{version.encryption}</span>
         </div>
+      </div>
+
+      {/* Official Source Link - always visible */}
+      <div className="px-6 py-3 border-t border-gray-100">
+        <a
+          href={version.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        >
+          <ExternalLink size={13} />
+          Official documentation
+        </a>
       </div>
 
       {/* Expandable Section */}

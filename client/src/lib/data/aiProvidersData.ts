@@ -2,11 +2,20 @@
 // Last Updated: January 2026
 
 export type RiskLevel = 'low' | 'medium' | 'high' | 'very-high';
+export type PolicyCategory = 'privacy' | 'terms' | 'enterprise' | 'security' | 'compliance';
 
 export interface DataCategory {
   name: string;
   description: string;
   examples: string[];
+}
+
+export interface PolicyLink {
+  title: string;
+  url: string;
+  description: string;
+  category: PolicyCategory;
+  lastChecked: string;
 }
 
 export interface AIVersion {
@@ -30,6 +39,7 @@ export interface AIProvider {
   logo: string;
   description: string;
   versions: AIVersion[];
+  policyLinks: PolicyLink[];
 }
 
 export const dataCategories: DataCategory[] = [
@@ -134,6 +144,43 @@ export const aiProviders: AIProvider[] = [
         sourceUrl: 'https://openai.com/enterprise-privacy/',
       },
     ],
+    policyLinks: [
+      {
+        title: 'Privacy Policy',
+        url: 'https://openai.com/policies/row-privacy-policy/',
+        description: 'OpenAI\'s full privacy policy covering data collection, usage, and user rights.',
+        category: 'privacy',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Terms of Use',
+        url: 'https://openai.com/policies/terms-of-use/',
+        description: 'Terms governing the use of OpenAI services and APIs.',
+        category: 'terms',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Enterprise Privacy',
+        url: 'https://openai.com/enterprise-privacy/',
+        description: 'Data handling commitments and privacy protections for enterprise customers.',
+        category: 'enterprise',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Business Data Policy',
+        url: 'https://openai.com/business-data/',
+        description: 'How OpenAI handles data for ChatGPT Team and Business plans.',
+        category: 'enterprise',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Trust & Security Portal',
+        url: 'https://trust.openai.com/',
+        description: 'Security certifications, compliance reports, and audit documentation.',
+        category: 'security',
+        lastChecked: '2026-01-01',
+      },
+    ],
   },
   {
     id: 'google',
@@ -181,6 +228,43 @@ export const aiProviders: AIProvider[] = [
           '✓ No human review of your data',
         ],
         sourceUrl: 'https://docs.cloud.google.com/gemini/docs/discover/data-governance',
+      },
+    ],
+    policyLinks: [
+      {
+        title: 'Gemini Apps Privacy Hub',
+        url: 'https://support.google.com/gemini/answer/13594961',
+        description: 'How Google collects and uses data in Gemini consumer apps including human review details.',
+        category: 'privacy',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Google Privacy Policy',
+        url: 'https://policies.google.com/privacy',
+        description: 'Google\'s main privacy policy covering all services including Gemini.',
+        category: 'privacy',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Gemini for Workspace Data Governance',
+        url: 'https://workspace.google.com/intl/en/terms/user_features.html',
+        description: 'Data governance documentation for Gemini in Google Workspace (enterprise).',
+        category: 'enterprise',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Google Cloud Security',
+        url: 'https://cloud.google.com/security',
+        description: 'Security infrastructure, certifications, and compliance for Google Cloud and Workspace.',
+        category: 'security',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Google Terms of Service',
+        url: 'https://policies.google.com/terms',
+        description: 'Google\'s general terms of service applicable to Gemini.',
+        category: 'terms',
+        lastChecked: '2026-01-01',
       },
     ],
   },
@@ -232,6 +316,43 @@ export const aiProviders: AIProvider[] = [
         sourceUrl: 'https://trust.anthropic.com/',
       },
     ],
+    policyLinks: [
+      {
+        title: 'Privacy Policy',
+        url: 'https://www.anthropic.com/legal/privacy',
+        description: 'Anthropic\'s privacy policy covering data collection, usage, and your rights.',
+        category: 'privacy',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Consumer Terms Update',
+        url: 'https://www.anthropic.com/news/updates-to-our-consumer-terms',
+        description: 'Details on how consumer plan users can control whether data is used for training.',
+        category: 'terms',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Trust & Safety Center',
+        url: 'https://trust.anthropic.com/',
+        description: 'Security certifications, compliance documentation, and audit reports for enterprise.',
+        category: 'security',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Acceptable Use Policy',
+        url: 'https://www.anthropic.com/legal/aup',
+        description: 'What types of use are permitted and prohibited on Anthropic platforms.',
+        category: 'terms',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Commercial Terms',
+        url: 'https://www.anthropic.com/legal/commercial-terms',
+        description: 'Data processing terms and commitments for Team and Enterprise customers.',
+        category: 'enterprise',
+        lastChecked: '2026-01-01',
+      },
+    ],
   },
   {
     id: 'microsoft',
@@ -278,6 +399,43 @@ export const aiProviders: AIProvider[] = [
           '✓ Enterprise-grade protection',
         ],
         sourceUrl: 'https://learn.microsoft.com/en-us/copilot/commercial-data-protection',
+      },
+    ],
+    policyLinks: [
+      {
+        title: 'Microsoft Privacy Statement',
+        url: 'https://privacy.microsoft.com/en-us/privacystatement',
+        description: 'Microsoft\'s full privacy statement covering Copilot and all Microsoft services.',
+        category: 'privacy',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Copilot Commercial Data Protection',
+        url: 'https://learn.microsoft.com/en-us/copilot/commercial-data-protection',
+        description: 'How commercial data protection works for Microsoft 365 Copilot enterprise users.',
+        category: 'enterprise',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Microsoft Trust Center',
+        url: 'https://www.microsoft.com/en-us/trust-center',
+        description: 'Security, privacy, and compliance information across all Microsoft services.',
+        category: 'security',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Microsoft Services Agreement',
+        url: 'https://www.microsoft.com/en-us/servicesagreement/',
+        description: 'Terms of service for Microsoft consumer products including Copilot free.',
+        category: 'terms',
+        lastChecked: '2026-01-01',
+      },
+      {
+        title: 'Microsoft Compliance Documentation',
+        url: 'https://learn.microsoft.com/en-us/compliance/',
+        description: 'Compliance offerings, audit reports, and regulatory documentation.',
+        category: 'compliance',
+        lastChecked: '2026-01-01',
       },
     ],
   },
