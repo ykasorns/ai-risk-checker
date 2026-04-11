@@ -1,0 +1,42 @@
+name: Check Policy Sources
+
+on:
+  schedule:
+    # Runs on the 1st of every month at 08:00 UTC
+    - cron: '0 8 1 * *'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check policy URLs and update dates
+        id: check
+        run: node scripts/check-policy-sources.mjs
+        continue-on-error: true
+
+      - name: Commit updated dates (if changed)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet && echo "No changes to commit." || (
+            git add client/src/lib/data/aiProvidersData.ts &&
+            git commit -m "chore: update policy source lastChecked dates to $(date +%Y-%m-%d) [skip ci]" &&
+            git push
+          )
+
+      - name: Report unreachable URLs
+        if: steps.check.outcome == 'failure'
+        run: |
+          echo "::warning::One or more policy URLs were unreachable. Check the logs above and update the data manually."
