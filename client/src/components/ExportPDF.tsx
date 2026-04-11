@@ -1,5 +1,9 @@
 import { Download, FileText } from 'lucide-react';
 import { useState } from 'react';
+import { aiProviders } from '@/lib/data/aiProvidersData';
+import { complianceData } from '@/lib/data/complianceData';
+import { complianceChecklists } from '@/lib/data/complianceChecklistData';
+import { providerHistory } from '@/lib/data/providerHistoryData';
 
 export interface ExportOptions {
   includeDashboard: boolean;
@@ -21,32 +25,20 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
     includeChecklist: false,
     includeHistory: false,
   });
-
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      // Dynamic import html2pdf
-      const html2pdfModule = await import('html2pdf.js') as any;
+      const html2pdfModule = (await import('html2pdf.js')) as any;
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
-      // Create HTML content
-      const htmlContent = generateHTMLContent(options);
-
-      // Create a temporary container
       const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-      element.style.display = 'block';
-      element.style.position = 'fixed';
-      element.style.left = '-9999px';
-      element.style.top = '-9999px';
-      element.style.width = '210mm';
-      element.style.height = '297mm';
+      element.innerHTML = generateHTMLContent(options);
+      element.style.cssText = 'display:block;position:fixed;left:-9999px;top:-9999px;width:210mm;';
       document.body.appendChild(element);
 
-      // PDF options
-      const opt: any = {
+      const opt = {
         margin: 10,
         filename: `AI-Risk-Assessment-${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'JPEG', quality: 0.98 },
@@ -55,23 +47,16 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
         pagebreak: { mode: ['css', 'legacy'] },
       };
 
-      // Generate PDF
-      await html2pdf().set(opt).from(element).save().then(() => {
-        // Clean up
-        document.body.removeChild(element);
-      }).catch((error: any) => {
-        console.error('PDF generation error:', error);
-        // Clean up on error
-        if (document.body.contains(element)) {
-          document.body.removeChild(element);
-        }
-        throw error;
-      });
+      await html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .finally(() => {
+          if (document.body.contains(element)) document.body.removeChild(element);
+        });
 
       onExport?.(options);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      // Fallback to text export if html2pdf fails
+    } catch {
       fallbackTextExport(options);
     } finally {
       setIsExporting(false);
@@ -79,24 +64,26 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
   };
 
   const fallbackTextExport = (opts: ExportOptions) => {
-    const content = generatePDFContent(opts);
+    const content = generateTextContent(opts);
     const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `AI-Risk-Assessment-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AI-Risk-Assessment-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
-  const handleCheckboxChange = (key: keyof ExportOptions) => {
-    setOptions((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
+  const toggleOption = (key: keyof ExportOptions) =>
+    setOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const checkboxItems: { key: keyof ExportOptions; label: string; sub: string }[] = [
+    { key: 'includeDashboard', label: 'Dashboard Summary', sub: 'Provider count, risk model counts, safe model rate' },
+    { key: 'includeRiskAssessment', label: 'Risk Assessment Results', sub: 'All AI providers and their risk levels' },
+    { key: 'includeCompliance', label: 'Compliance Recommendations', sub: 'GDPR and PDPA guidelines from official data' },
+    { key: 'includeChecklist', label: 'Compliance Checklist', sub: 'Audit checklist for high-risk usage' },
+    { key: 'includeHistory', label: 'Provider History', sub: 'Policy changes timeline from all providers' },
+  ];
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
@@ -110,77 +97,27 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
         </p>
       </div>
 
-      {/* Export Options */}
       <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
         <h4 className="font-semibold text-sm mb-3">Select sections to include:</h4>
-
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors">
-          <input
-            type="checkbox"
-            checked={options.includeDashboard}
-            onChange={() => handleCheckboxChange('includeDashboard')}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <span className="text-sm">
-            <span className="font-medium">Dashboard Summary</span>
-            <span className="text-gray-600 block text-xs">Risk distribution, compliance scores, trends</span>
-          </span>
-        </label>
-
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors">
-          <input
-            type="checkbox"
-            checked={options.includeRiskAssessment}
-            onChange={() => handleCheckboxChange('includeRiskAssessment')}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <span className="text-sm">
-            <span className="font-medium">Risk Assessment Results</span>
-            <span className="text-gray-600 block text-xs">AI provider analysis and risk levels</span>
-          </span>
-        </label>
-
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors">
-          <input
-            type="checkbox"
-            checked={options.includeCompliance}
-            onChange={() => handleCheckboxChange('includeCompliance')}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <span className="text-sm">
-            <span className="font-medium">Compliance Recommendations</span>
-            <span className="text-gray-600 block text-xs">GDPR and PDPA compliance guidelines</span>
-          </span>
-        </label>
-
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors">
-          <input
-            type="checkbox"
-            checked={options.includeChecklist}
-            onChange={() => handleCheckboxChange('includeChecklist')}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <span className="text-sm">
-            <span className="font-medium">Compliance Checklist</span>
-            <span className="text-gray-600 block text-xs">Audit checklist for compliance verification</span>
-          </span>
-        </label>
-
-        <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors">
-          <input
-            type="checkbox"
-            checked={options.includeHistory}
-            onChange={() => handleCheckboxChange('includeHistory')}
-            className="w-4 h-4 rounded border-gray-300"
-          />
-          <span className="text-sm">
-            <span className="font-medium">Provider History</span>
-            <span className="text-gray-600 block text-xs">Policy changes and updates timeline</span>
-          </span>
-        </label>
+        {checkboxItems.map(({ key, label, sub }) => (
+          <label
+            key={key}
+            className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded transition-colors"
+          >
+            <input
+              type="checkbox"
+              checked={options[key]}
+              onChange={() => toggleOption(key)}
+              className="w-4 h-4 rounded border-gray-300"
+            />
+            <span className="text-sm">
+              <span className="font-medium">{label}</span>
+              <span className="text-gray-600 block text-xs">{sub}</span>
+            </span>
+          </label>
+        ))}
       </div>
 
-      {/* Export Button */}
       <button
         onClick={handleExport}
         disabled={isExporting}
@@ -190,10 +127,9 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
         {isExporting ? 'Generating Report...' : 'Export to PDF'}
       </button>
 
-      {/* Info Box */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <p className="text-sm text-green-800">
-          <span className="font-semibold">✓ Ready to export:</span> Your compliance report will include all selected sections
+          <span className="font-semibold">✓ Ready to export:</span> Report is generated from live provider data
           and can be shared with management, auditors, or compliance teams.
         </p>
       </div>
@@ -202,299 +138,130 @@ export function ExportPDF({ onExport }: ExportPDFProps) {
 }
 
 function generateHTMLContent(options: ExportOptions): string {
-  const date = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const allVersions = aiProviders.flatMap((p) => p.versions);
+  const highRisk = allVersions.filter((v) => v.riskLevel === 'high' || v.riskLevel === 'very-high').length;
+  const safeRate = Math.round((allVersions.filter((v) => !v.dataUsedForTraining).length / allVersions.length) * 100);
 
-  let html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          margin: 0;
-          padding: 20px;
-        }
-        h1 { color: #2e3192; font-size: 24px; margin-bottom: 10px; }
-        h2 { color: #1b75bc; font-size: 18px; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #6dcff6; padding-bottom: 5px; }
-        h3 { color: #2e3192; font-size: 14px; margin-top: 15px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .section { margin-bottom: 20px; }
-        .item { margin-left: 20px; margin-bottom: 10px; }
-        .checklist { margin-left: 20px; }
-        .checklist-item { margin-bottom: 8px; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f0f0f0; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>AI RISK CHECKER</h1>
-        <h2 style="border: none; color: #666; font-size: 14px;">Compliance Report</h2>
-        <p>Generated: ${date}</p>
-      </div>
-  `;
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:20px}
+    h1{color:#2e3192;font-size:22px}h2{color:#1b75bc;font-size:16px;border-bottom:2px solid #6dcff6;padding-bottom:4px;margin-top:20px}
+    h3{color:#2e3192;font-size:13px;margin-top:12px}ul{margin:6px 0}li{margin-bottom:4px}
+    .header{text-align:center;margin-bottom:24px}.footer{margin-top:28px;padding-top:16px;border-top:1px solid #ddd;font-size:11px;color:#666}
+    table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #ddd;padding:6px;text-align:left;font-size:12px}th{background:#f0f0f0}
+  </style></head><body>
+  <div class="header"><h1>AI RISK CHECKER — Compliance Report</h1><p style="color:#666;font-size:13px">Generated: ${date}</p></div>`;
 
   if (options.includeDashboard) {
-    html += `
-      <div class="section">
-        <h2>Dashboard Summary</h2>
-        <div class="item">
-          <h3>Key Metrics</h3>
-          <ul>
-            <li>Total AI Providers: 4</li>
-            <li>High Risk Models: 3</li>
-            <li>Compliance Score: 82%</li>
-            <li>Compliant Models: 2</li>
-          </ul>
-        </div>
-        <div class="item">
-          <h3>Risk Distribution</h3>
-          <ul>
-            <li>Low Risk: 2 models</li>
-            <li>Medium Risk: 1 model</li>
-            <li>High Risk: 3 models</li>
-            <li>Very High Risk: 1 model</li>
-          </ul>
-        </div>
-      </div>
-    `;
+    html += `<h2>Dashboard Summary</h2>
+    <table><tr><th>Metric</th><th>Value</th></tr>
+    <tr><td>Total AI Providers</td><td>${aiProviders.length}</td></tr>
+    <tr><td>Total Plans / Versions</td><td>${allVersions.length}</td></tr>
+    <tr><td>High / Very High Risk Plans</td><td>${highRisk}</td></tr>
+    <tr><td>Safe Models (No Training Data)</td><td>${safeRate}%</td></tr>
+    </table>`;
   }
 
   if (options.includeRiskAssessment) {
-    html += `
-      <div class="section">
-        <h2>Risk Assessment Results</h2>
-        <div class="item">
-          <h3>OpenAI</h3>
-          <ul>
-            <li>ChatGPT Free: High Risk (75%)</li>
-            <li>ChatGPT Business: Low Risk (25%)</li>
-            <li>ChatGPT Enterprise: Low Risk (25%)</li>
-          </ul>
-        </div>
-        <div class="item">
-          <h3>Google Gemini</h3>
-          <ul>
-            <li>Gemini Apps: Very High Risk (100%)</li>
-            <li>Gemini for Workspace: Low Risk (25%)</li>
-          </ul>
-        </div>
-        <div class="item">
-          <h3>Anthropic Claude</h3>
-          <ul>
-            <li>Claude Free/Pro: Medium Risk (50%)</li>
-            <li>Claude Team/Enterprise: Low Risk (25%)</li>
-          </ul>
-        </div>
-        <div class="item">
-          <h3>Microsoft Copilot</h3>
-          <ul>
-            <li>Copilot Free: High Risk (75%)</li>
-            <li>Copilot with Commercial Data Protection: Low Risk (25%)</li>
-          </ul>
-        </div>
-      </div>
-    `;
+    html += `<h2>Risk Assessment Results</h2>`;
+    for (const provider of aiProviders) {
+      html += `<h3>${provider.logo} ${provider.name}</h3><table>
+      <tr><th>Plan</th><th>Risk</th><th>Training</th><th>Human Review</th><th>Encryption</th></tr>`;
+      for (const v of provider.versions) {
+        html += `<tr><td>${v.name}</td><td>${v.riskLevel.toUpperCase()}</td>
+        <td>${v.dataUsedForTraining ? '⚠️ Yes' : '✅ No'}</td>
+        <td>${v.humanReview ? '⚠️ Yes' : '✅ No'}</td><td>${v.encryption}</td></tr>`;
+      }
+      html += `</table>`;
+    }
   }
 
   if (options.includeCompliance) {
-    html += `
-      <div class="section">
-        <h2>Compliance Recommendations</h2>
-        <div class="item">
-          <h3>GDPR Compliance</h3>
-          <ul>
-            <li>Use Enterprise/Team plans with no data training</li>
-            <li>Implement Data Processing Agreements (DPA)</li>
-            <li>Conduct Data Protection Impact Assessment (DPIA)</li>
-            <li>Ensure data subject rights are honored</li>
-          </ul>
-        </div>
-        <div class="item">
-          <h3>PDPA Compliance</h3>
-          <ul>
-            <li>Use plans that do not use data for training</li>
-            <li>Implement proper consent mechanisms</li>
-            <li>Maintain audit logs of all AI usage</li>
-            <li>Ensure data residency in Thailand or compliant regions</li>
-          </ul>
-        </div>
-      </div>
-    `;
+    html += `<h2>Compliance Recommendations</h2>`;
+    for (const [key, framework] of Object.entries(complianceData)) {
+      html += `<h3>${framework.framework}</h3><ul>`;
+      framework.requirements.forEach((r: string) => { html += `<li>${r}</li>`; });
+      html += `</ul>`;
+    }
   }
 
   if (options.includeChecklist) {
-    html += `
-      <div class="section">
-        <h2>Compliance Audit Checklist</h2>
-        <div class="item">
-          <h3>For High Risk</h3>
-          <div class="checklist">
-            <div class="checklist-item">☐ Legal Review Required</div>
-            <div class="checklist-item">☐ DPIA Completion</div>
-            <div class="checklist-item">☐ Consent Management</div>
-            <div class="checklist-item">☐ Data Minimization</div>
-            <div class="checklist-item">☐ Security Assessment</div>
-            <div class="checklist-item">☐ Data Residency Check</div>
-            <div class="checklist-item">☐ Audit & Monitoring</div>
-            <div class="checklist-item">☐ Incident Response Plan</div>
-            <div class="checklist-item">☐ User Rights Implementation</div>
-            <div class="checklist-item">☐ Vendor Assessment</div>
-          </div>
-        </div>
-      </div>
-    `;
+    html += `<h2>Compliance Checklist — High Risk</h2><table>
+    <tr><th>Category</th><th>Task</th><th>Priority</th><th>GDPR</th><th>PDPA</th></tr>`;
+    complianceChecklists['high'].forEach((item) => {
+      html += `<tr><td>${item.category}</td><td>${item.task}</td><td>${item.priority}</td>
+      <td>${item.gdprRelevant ? '✓' : ''}</td><td>${item.pdpaRelevant ? '✓' : ''}</td></tr>`;
+    });
+    html += `</table>`;
   }
 
   if (options.includeHistory) {
-    html += `
-      <div class="section">
-        <h2>Provider Policy Changes</h2>
-        <div class="item">
-          <p>Recent updates from AI providers:</p>
-          <ul>
-            <li>OpenAI: Enhanced Data Retention Controls (Dec 2025)</li>
-            <li>Google Gemini: Workspace Privacy Controls (Dec 2025)</li>
-            <li>Anthropic Claude: Custom Data Retention Policies (Dec 2025)</li>
-            <li>Microsoft Copilot: Commercial Data Protection Enhancement (Dec 2025)</li>
-          </ul>
-        </div>
-      </div>
-    `;
+    html += `<h2>Provider Policy History</h2>`;
+    for (const ph of providerHistory) {
+      html += `<h3>${ph.provider}</h3><ul>`;
+      ph.changes.slice(0, 5).forEach((c) => {
+        const d = new Date(c.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        html += `<li><strong>${d} — ${c.title}</strong> (${c.impact}): ${c.description}</li>`;
+      });
+      html += `</ul>`;
+    }
   }
 
-  html += `
-    <div class="footer">
-      <h3>Report Notes</h3>
-      <p>This report is generated for compliance and risk assessment purposes. Always review the official terms of service and privacy policies of each AI provider. Data practices may change, and different regions may have different policies.</p>
-      <p>For more information, visit: https://ai-risk-checker.manus.space</p>
-      <p style="margin-top: 20px; text-align: center; color: #999;">--- End of Report ---</p>
-    </div>
-    </body>
-    </html>
-  `;
-
+  html += `<div class="footer"><p>This report is based on official AI provider documentation. Always review current terms of service before use.</p></div></body></html>`;
   return html;
 }
 
-function generatePDFContent(options: ExportOptions): string {
-  const date = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+function generateTextContent(options: ExportOptions): string {
+  const date = new Date().toLocaleDateString();
+  const allVersions = aiProviders.flatMap((p) => p.versions);
+  const highRisk = allVersions.filter((v) => v.riskLevel === 'high' || v.riskLevel === 'very-high').length;
+  const safeRate = Math.round((allVersions.filter((v) => !v.dataUsedForTraining).length / allVersions.length) * 100);
 
-  let content = `AI RISK CHECKER - COMPLIANCE REPORT
-Generated: ${date}
-=====================================\n\n`;
+  let out = `AI RISK CHECKER — COMPLIANCE REPORT\nGenerated: ${date}\n${'='.repeat(50)}\n\n`;
 
   if (options.includeDashboard) {
-    content += `DASHBOARD SUMMARY
------------------
-Total AI Providers: 4
-High Risk Models: 3
-Compliance Score: 82%
-Compliant Models: 2
-
-Risk Distribution:
-- Low Risk: 2 models
-- Medium Risk: 1 model
-- High Risk: 3 models
-- Very High Risk: 1 model
-
-\n`;
+    out += `DASHBOARD SUMMARY\n${'-'.repeat(20)}\nProviders: ${aiProviders.length}\nHigh/Very High Risk Plans: ${highRisk}\nSafe Models (No Training): ${safeRate}%\n\n`;
   }
 
   if (options.includeRiskAssessment) {
-    content += `RISK ASSESSMENT RESULTS
------------------------
-OpenAI:
-  - ChatGPT Free: High Risk (75%)
-  - ChatGPT Business: Low Risk (25%)
-  - ChatGPT Enterprise: Low Risk (25%)
-
-Google Gemini:
-  - Gemini Apps: Very High Risk (100%)
-  - Gemini for Workspace: Low Risk (25%)
-
-Anthropic Claude:
-  - Claude Free/Pro: Medium Risk (50%)
-  - Claude Team/Enterprise: Low Risk (25%)
-
-Microsoft Copilot:
-  - Copilot Free: High Risk (75%)
-  - Copilot with Commercial Data Protection: Low Risk (25%)
-
-\n`;
+    out += `RISK ASSESSMENT\n${'-'.repeat(20)}\n`;
+    aiProviders.forEach((p) => {
+      out += `\n${p.name}\n`;
+      p.versions.forEach((v) => {
+        out += `  ${v.name} [${v.riskLevel.toUpperCase()}] Training: ${v.dataUsedForTraining ? 'Yes' : 'No'}\n`;
+      });
+    });
+    out += '\n';
   }
 
   if (options.includeCompliance) {
-    content += `COMPLIANCE RECOMMENDATIONS
----------------------------
-GDPR Compliance:
-- Use Enterprise/Team plans with no data training
-- Implement Data Processing Agreements (DPA)
-- Conduct Data Protection Impact Assessment (DPIA)
-- Ensure data subject rights are honored
-
-PDPA Compliance:
-- Use plans that do not use data for training
-- Implement proper consent mechanisms
-- Maintain audit logs of all AI usage
-- Ensure data residency in Thailand or compliant regions
-
-\n`;
+    out += `COMPLIANCE RECOMMENDATIONS\n${'-'.repeat(20)}\n`;
+    Object.values(complianceData).forEach((f) => {
+      out += `\n${f.framework}\n`;
+      f.requirements.forEach((r: string) => { out += `  - ${r}\n`; });
+    });
+    out += '\n';
   }
 
   if (options.includeChecklist) {
-    content += `COMPLIANCE AUDIT CHECKLIST
----------------------------
-For High Risk:
-☐ Legal Review Required
-☐ DPIA Completion
-☐ Consent Management
-☐ Data Minimization
-☐ Security Assessment
-☐ Data Residency Check
-☐ Audit & Monitoring
-☐ Incident Response Plan
-☐ User Rights Implementation
-☐ Vendor Assessment
-
-\n`;
+    out += `COMPLIANCE CHECKLIST (High Risk)\n${'-'.repeat(20)}\n`;
+    complianceChecklists['high'].forEach((item) => {
+      out += `☐ [${item.priority.toUpperCase()}] ${item.task}\n  ${item.description}\n`;
+    });
+    out += '\n';
   }
 
   if (options.includeHistory) {
-    content += `PROVIDER POLICY CHANGES
------------------------
-Recent updates from AI providers:
-- OpenAI: Enhanced Data Retention Controls (Dec 2025)
-- Google Gemini: Workspace Privacy Controls (Dec 2025)
-- Anthropic Claude: Custom Data Retention Policies (Dec 2025)
-- Microsoft Copilot: Commercial Data Protection Enhancement (Dec 2025)
-
-\n`;
+    out += `PROVIDER HISTORY\n${'-'.repeat(20)}\n`;
+    providerHistory.forEach((ph) => {
+      out += `\n${ph.provider}\n`;
+      ph.changes.slice(0, 5).forEach((c) => {
+        const d = new Date(c.date).toLocaleDateString();
+        out += `  ${d} — ${c.title} (${c.impact})\n`;
+      });
+    });
   }
 
-  content += `REPORT NOTES
------------
-This report is generated for compliance and risk assessment purposes.
-Always review the official terms of service and privacy policies of each AI provider.
-Data practices may change, and different regions may have different policies.
-
-For more information, visit: https://ai-risk-checker.manus.space
-
-=====================================
-End of Report`;
-
-  return content;
+  out += `\n${'='.repeat(50)}\nEnd of Report`;
+  return out;
 }

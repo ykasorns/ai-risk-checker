@@ -1,55 +1,119 @@
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Card } from '@/components/ui/card';
-import { AlertCircle, TrendingUp, Shield, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Shield, TrendingUp } from 'lucide-react';
 import { MainNavigation } from '@/components/MainNavigation';
+import { aiProviders, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
+
+// Derive risk distribution from real data
+function buildRiskDistribution() {
+  const counts: Record<string, number> = { low: 0, medium: 0, high: 0, 'very-high': 0 };
+  for (const provider of aiProviders) {
+    for (const version of provider.versions) {
+      counts[version.riskLevel]++;
+    }
+  }
+  return [
+    { name: riskLevelDescriptions.low.label, value: counts.low, color: riskLevelDescriptions.low.color },
+    { name: riskLevelDescriptions.medium.label, value: counts.medium, color: riskLevelDescriptions.medium.color },
+    { name: riskLevelDescriptions.high.label, value: counts.high, color: riskLevelDescriptions.high.color },
+    { name: riskLevelDescriptions['very-high'].label, value: counts['very-high'], color: riskLevelDescriptions['very-high'].color },
+  ].filter((d) => d.value > 0);
+}
+
+// Derive compliance scores per provider from actual compliance arrays
+function buildComplianceStatus() {
+  const frameworks = ['GDPR', 'SOC 2', 'ISO 27001'];
+  return aiProviders.map((provider) => {
+    const allVersionCompliance = provider.versions.flatMap((v) => v.compliance);
+    const score = (framework: string) => {
+      const matching = provider.versions.filter((v) =>
+        v.compliance.some((c) => c.toUpperCase().includes(framework))
+      ).length;
+      return Math.round((matching / provider.versions.length) * 100);
+    };
+    return {
+      provider: provider.name,
+      GDPR: score('GDPR'),
+      'SOC 2': score('SOC'),
+      'ISO 27001': score('ISO'),
+    };
+  });
+}
+
+// Derive summary stats from real data
+function buildStats() {
+  const allVersions = aiProviders.flatMap((p) => p.versions);
+  const highRisk = allVersions.filter((v) => v.riskLevel === 'high' || v.riskLevel === 'very-high').length;
+  const lowRisk = allVersions.filter((v) => v.riskLevel === 'low').length;
+  const compliantCount = allVersions.filter((v) => !v.dataUsedForTraining).length;
+  const complianceScore = Math.round((compliantCount / allVersions.length) * 100);
+
+  return { totalProviders: aiProviders.length, highRisk, complianceScore, compliantModels: lowRisk };
+}
+
+// Derive recent alerts from high-risk versions with training enabled
+function buildAlerts() {
+  return aiProviders
+    .flatMap((p) =>
+      p.versions
+        .filter((v) => v.dataUsedForTraining)
+        .map((v) => ({
+          level: v.riskLevel,
+          message: `${p.name} — ${v.name}: ${v.description.split('.')[0]}.`,
+        }))
+    )
+    .slice(0, 3);
+}
+
+const riskDistribution = buildRiskDistribution();
+const complianceStatus = buildComplianceStatus();
+const { totalProviders, highRisk, complianceScore, compliantModels } = buildStats();
+const alerts = buildAlerts();
+
+const alertStyle: Record<string, { bg: string; text: string; title: string; iconColor: string }> = {
+  'very-high': { bg: 'bg-red-50', text: 'text-red-700', title: 'text-red-900', iconColor: 'text-red-600' },
+  high: { bg: 'bg-red-50', text: 'text-red-700', title: 'text-red-900', iconColor: 'text-red-600' },
+  medium: { bg: 'bg-yellow-50', text: 'text-yellow-700', title: 'text-yellow-900', iconColor: 'text-yellow-600' },
+  low: { bg: 'bg-blue-50', text: 'text-blue-700', title: 'text-blue-900', iconColor: 'text-blue-600' },
+};
 
 export default function Dashboard() {
-  // Sample data for charts
-  const riskDistribution = [
-    { name: 'Low Risk', value: 2, color: '#16a34a' },
-    { name: 'Medium Risk', value: 1, color: '#ea580c' },
-    { name: 'High Risk', value: 3, color: '#dc2626' },
-    { name: 'Very High Risk', value: 1, color: '#991b1b' },
-  ];
-
-  const complianceStatus = [
-    { provider: 'OpenAI', gdpr: 75, pdpa: 60, ccpa: 70 },
-    { provider: 'Google Gemini', gdpr: 85, pdpa: 80, ccpa: 82 },
-    { provider: 'Anthropic Claude', gdpr: 90, pdpa: 85, ccpa: 88 },
-    { provider: 'Microsoft Copilot', gdpr: 80, pdpa: 75, ccpa: 78 },
-  ];
-
-  const riskTrend = [
-    { month: 'Jan', risk: 65 },
-    { month: 'Feb', risk: 62 },
-    { month: 'Mar', risk: 68 },
-    { month: 'Apr', risk: 60 },
-    { month: 'May', risk: 55 },
-    { month: 'Jun', risk: 58 },
-  ];
-
   const stats = [
     {
       title: 'Total AI Providers',
-      value: '4',
+      value: String(totalProviders),
       icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
       bg: 'bg-blue-50',
     },
     {
-      title: 'High Risk Models',
-      value: '3',
+      title: 'High / Very High Risk Models',
+      value: String(highRisk),
       icon: <AlertCircle className="w-6 h-6 text-red-600" />,
       bg: 'bg-red-50',
     },
     {
-      title: 'Compliance Score',
-      value: '82%',
+      title: 'Safe Models (No Training)',
+      value: `${complianceScore}%`,
       icon: <Shield className="w-6 h-6 text-green-600" />,
       bg: 'bg-green-50',
     },
     {
-      title: 'Compliant Models',
-      value: '2',
+      title: 'Low Risk Models',
+      value: String(compliantModels),
       icon: <CheckCircle className="w-6 h-6 text-emerald-600" />,
       bg: 'bg-emerald-50',
     },
@@ -59,10 +123,9 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <MainNavigation />
       <div className="max-w-7xl mx-auto p-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Overview of your AI usage and compliance status</p>
+          <p className="text-gray-600">Overview of AI providers risk and compliance status</p>
         </div>
 
         {/* Stats Cards */}
@@ -94,7 +157,6 @@ export default function Dashboard() {
                   labelLine={false}
                   label={({ name, value }) => `${name}: ${value}`}
                   outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {riskDistribution.map((entry, index) => (
@@ -106,72 +168,70 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </Card>
 
-          {/* Compliance Status */}
+          {/* Compliance Score by Provider */}
           <Card className="p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Compliance Score by Provider</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Compliance Coverage by Provider</h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={complianceStatus}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="provider" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="provider" angle={-20} textAnchor="end" height={60} tick={{ fontSize: 11 }} />
+                <YAxis unit="%" />
+                <Tooltip formatter={(value) => `${value}%`} />
                 <Legend />
-                <Bar dataKey="gdpr" fill="#6dcff6" name="GDPR" />
-                <Bar dataKey="pdpa" fill="#1b75bc" name="PDPA" />
-                <Bar dataKey="ccpa" fill="#2e3192" name="CCPA" />
+                <Bar dataKey="GDPR" fill="#6dcff6" />
+                <Bar dataKey="SOC 2" fill="#1b75bc" />
+                <Bar dataKey="ISO 27001" fill="#2e3192" />
               </BarChart>
             </ResponsiveContainer>
           </Card>
         </div>
 
-        {/* Risk Trend */}
+        {/* Training Data Usage by Provider */}
         <Card className="p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Overall Risk Trend</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={riskTrend}>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Data Used for Training — Per Plan</h2>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart
+              data={aiProviders.flatMap((p) =>
+                p.versions.map((v) => ({
+                  name: `${p.name.split(' ')[0]} — ${v.name.split(' ').slice(-1)[0]}`,
+                  training: v.dataUsedForTraining ? 1 : 0,
+                  color: v.dataUsedForTraining ? '#dc2626' : '#16a34a',
+                }))
+              )}
+            >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="risk"
-                stroke="#2e3192"
-                strokeWidth={2}
-                dot={{ fill: '#1b75bc', r: 5 }}
-                activeDot={{ r: 7 }}
-                name="Risk Score"
-              />
-            </LineChart>
+              <XAxis dataKey="name" angle={-30} textAnchor="end" height={80} tick={{ fontSize: 10 }} />
+              <YAxis ticks={[0, 1]} tickFormatter={(v) => (v === 1 ? 'Yes' : 'No')} />
+              <Tooltip formatter={(v) => (v === 1 ? 'Used for training' : 'Not used')} />
+              <Bar dataKey="training" name="Training Data">
+                {aiProviders
+                  .flatMap((p) => p.versions)
+                  .map((v, i) => (
+                    <Cell key={i} fill={v.dataUsedForTraining ? '#dc2626' : '#16a34a'} />
+                  ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </Card>
 
-        {/* Recent Alerts */}
+        {/* Alerts from high-risk training-enabled models */}
         <Card className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Alerts</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Risk Alerts</h2>
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-red-900">High Risk Alert</p>
-                <p className="text-sm text-red-700">ChatGPT Free uses data for training. Review compliance requirements.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-yellow-900">Policy Update</p>
-                <p className="text-sm text-yellow-700">Google Gemini Apps now includes human review. Update your assessment.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-blue-900">Compliance Update</p>
-                <p className="text-sm text-blue-700">Anthropic Claude Enterprise now supports custom data retention policies.</p>
-              </div>
-            </div>
+            {alerts.map((alert, i) => {
+              const style = alertStyle[alert.level] ?? alertStyle.medium;
+              return (
+                <div key={i} className={`flex items-start gap-3 p-3 ${style.bg} rounded-lg`}>
+                  <AlertCircle className={`w-5 h-5 ${style.iconColor} flex-shrink-0 mt-0.5`} />
+                  <div>
+                    <p className={`font-semibold ${style.title}`}>
+                      {alert.level === 'very-high' ? 'Very High Risk' : alert.level.charAt(0).toUpperCase() + alert.level.slice(1) + ' Risk'} — Uses Training Data
+                    </p>
+                    <p className={`text-sm ${style.text}`}>{alert.message}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </Card>
       </div>

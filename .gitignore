@@ -2,6 +2,12 @@
 **/node_modules
 .pnpm-store/
 
+# Internal / platform files
+.manus-logs/
+.claude/
+ideas.md
+TODO.md
+
 # Build outputs
 dist/
 build/
