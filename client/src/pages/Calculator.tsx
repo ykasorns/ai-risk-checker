@@ -23,6 +23,7 @@ const dataTypeOptions = [
 ];
 
 export default function Calculator() {
+  const [numUsersInput, setNumUsersInput] = useState<string>('1');
   const [state, setState] = useState<CalculatorState>({
     numUsers: 1,
     dataTypes: [],
@@ -37,6 +38,8 @@ export default function Calculator() {
       alert('Please select at least one data type');
       return;
     }
+    const parsedUsers = parseInt(numUsersInput) || 1;
+    setState((prev) => ({ ...prev, numUsers: parsedUsers }));
 
     // Calculate base score from data types
     const baseScore = state.dataTypes.reduce((sum, typeId) => {
@@ -45,7 +48,7 @@ export default function Calculator() {
     }, 0);
 
     // Adjust for number of users
-    const userMultiplier = Math.min(state.numUsers / 100, 2);
+    const userMultiplier = Math.min(parsedUsers / 100, 2);
 
     // Adjust for usage duration
     const durationMultiplier =
@@ -117,8 +120,12 @@ export default function Calculator() {
                 <input
                   type="number"
                   min="1"
-                  value={state.numUsers}
-                  onChange={(e) => setState({ ...state, numUsers: parseInt(e.target.value) || 1 })}
+                  value={numUsersInput}
+                  onChange={(e) => setNumUsersInput(e.target.value)}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (!val || val < 1) setNumUsersInput('1');
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <p className="text-xs text-gray-500 mt-1">How many people will use this AI service?</p>
