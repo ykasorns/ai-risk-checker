@@ -1,4 +1,4 @@
-import { providerHistory } from '@/lib/providerHistoryData';
+import { providerHistory } from '@/lib/data/providerHistoryData';
 import { AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useState } from 'react';
 

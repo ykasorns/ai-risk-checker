@@ -1,5 +1,5 @@
 import { AIProviderSection } from '@/components/AIProviderSection';
-import { aiProviders } from '@/lib/aiProvidersData';
+import { aiProviders } from '@/lib/data/aiProvidersData';
 import { MainNavigation } from '@/components/MainNavigation';
 
 export default function Providers() {

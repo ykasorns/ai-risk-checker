@@ -1,6 +1,6 @@
 import { RiskAssessmentTool } from '@/components/RiskAssessmentTool';
 import { MainNavigation } from '@/components/MainNavigation';
-import { riskLevelDescriptions } from '@/lib/aiProvidersData';
+import { riskLevelDescriptions } from '@/lib/data/aiProvidersData';
 
 
 export default function Home() {

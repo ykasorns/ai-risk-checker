@@ -1,4 +1,4 @@
-import { complianceData, riskComplianceMapping, RiskLevel } from '@/lib/complianceData';
+import { complianceData, riskComplianceMapping, RiskLevel } from '@/lib/data/complianceData';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 

@@ -1,4 +1,4 @@
-import { AIVersion, riskLevelDescriptions } from '@/lib/aiProvidersData';
+import { AIVersion, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { RiskMeter } from './RiskMeter';

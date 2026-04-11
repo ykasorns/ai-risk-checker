@@ -1,4 +1,4 @@
-import { aiProviders, riskLevelDescriptions } from '@/lib/aiProvidersData';
+import { aiProviders, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
 import { useState } from 'react';
 
 export function ComparisonTable() {

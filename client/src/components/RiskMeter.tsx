@@ -1,4 +1,4 @@
-import { RiskLevel, riskLevelDescriptions } from '@/lib/aiProvidersData';
+import { RiskLevel, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
 
 interface RiskMeterProps {
   level: RiskLevel;

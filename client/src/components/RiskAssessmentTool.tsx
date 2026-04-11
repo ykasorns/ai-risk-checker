@@ -1,4 +1,4 @@
-import { aiProviders, dataCategories, riskLevelDescriptions } from '@/lib/aiProvidersData';
+import { aiProviders, dataCategories, riskLevelDescriptions } from '@/lib/data/aiProvidersData';
 import { useState } from 'react';
 import { RiskMeter } from './RiskMeter';
 

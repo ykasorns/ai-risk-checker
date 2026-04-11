@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { aiProviders } from '@/lib/aiProvidersData';
-import { complianceData } from '@/lib/complianceData';
-import { complianceChecklists } from '@/lib/complianceChecklistData';
+import { aiProviders } from '@/lib/data/aiProvidersData';
+import { complianceData } from '@/lib/data/complianceData';
+import { complianceChecklists } from '@/lib/data/complianceChecklistData';
 import { Button } from '@/components/ui/button';
 import { Download, Printer } from 'lucide-react';
 import { RiskMeter } from '@/components/RiskMeter';

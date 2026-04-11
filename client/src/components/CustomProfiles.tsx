@@ -1,4 +1,4 @@
-import { riskProfiles } from '@/lib/riskProfilesData';
+import { riskProfiles } from '@/lib/data/riskProfilesData';
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 

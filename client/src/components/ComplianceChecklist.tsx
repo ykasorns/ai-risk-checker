@@ -1,4 +1,4 @@
-import { complianceChecklists, RiskLevel } from '@/lib/complianceChecklistData';
+import { complianceChecklists, RiskLevel } from '@/lib/data/complianceChecklistData';
 import { CheckCircle2, Circle, Download, Printer } from 'lucide-react';
 import { useState } from 'react';
 

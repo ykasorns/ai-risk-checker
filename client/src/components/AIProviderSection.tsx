@@ -1,4 +1,4 @@
-import { AIProvider } from '@/lib/aiProvidersData';
+import { AIProvider } from '@/lib/data/aiProvidersData';
 import { AIVersionCard } from './AIVersionCard';
 
 interface AIProviderSectionProps {
