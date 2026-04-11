@@ -1,6 +1,16 @@
 import { riskProfiles } from '@/lib/data/riskProfilesData';
+import { aiProviders } from '@/lib/data/aiProvidersData';
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+
+const recommendedPlansByTolerance: Record<string, string[]> = {
+  low: aiProviders
+    .flatMap((p) => p.versions.filter((v) => v.riskLevel === 'low').map((v) => `${p.name} — ${v.name}`)),
+  medium: aiProviders
+    .flatMap((p) => p.versions.filter((v) => v.riskLevel === 'low' || v.riskLevel === 'medium').map((v) => `${p.name} — ${v.name}`)),
+  high: aiProviders
+    .flatMap((p) => p.versions.map((v) => `${p.name} — ${v.name}`)),
+};
 
 export function CustomProfiles() {
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
@@ -93,6 +103,18 @@ export function CustomProfiles() {
                   className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium"
                 >
                   {framework}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Recommended AI Plans */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-sm mb-2 text-gray-900">Recommended AI Plans</h4>
+            <div className="flex flex-wrap gap-2">
+              {(recommendedPlansByTolerance[profile.riskTolerance] ?? []).map((plan) => (
+                <span key={plan} className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium">
+                  ✓ {plan}
                 </span>
               ))}
             </div>

@@ -58,6 +58,8 @@ export function MainNavigation() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Open menu"
+            aria-expanded={isOpen}
             className="md:hidden p-2 hover:bg-gray-800 rounded transition-colors"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}

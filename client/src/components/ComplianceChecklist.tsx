@@ -128,6 +128,9 @@ export function ComplianceChecklist({ riskLevel }: ComplianceChecklistProps) {
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => toggleItem(item.id)}
+                        role="checkbox"
+                        aria-checked={isChecked}
+                        aria-label={item.task}
                         className="flex-shrink-0 mt-1 text-gray-400 hover:text-blue-600 transition-colors"
                       >
                         {isChecked ? (

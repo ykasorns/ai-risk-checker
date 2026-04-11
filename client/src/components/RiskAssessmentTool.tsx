@@ -208,6 +208,17 @@ export function RiskAssessmentTool() {
                     </p>
                   </div>
                 )}
+
+                {version?.recommendations && version.recommendations.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-xs font-bold text-gray-900 mb-2">Recommendations</h4>
+                    <ul className="space-y-1">
+                      {version.recommendations.map((rec, i) => (
+                        <li key={i} className="text-xs text-gray-700">{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </>
             )}
           </div>

@@ -24,11 +24,12 @@ const dataTypeOptions = [
 
 export default function Report() {
   const [state, setState] = useState<ReportState>({
-    selectedProvider: 'openai',
-    selectedVersion: 'free',
+    selectedProvider: aiProviders[0].id,
+    selectedVersion: aiProviders[0].versions[0].id,
     selectedDataTypes: [],
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const selectedProvider = aiProviders.find((p) => p.id === state.selectedProvider);
   const selectedVersionData = selectedProvider?.versions.find((v) => v.id === state.selectedVersion);
@@ -44,9 +45,10 @@ export default function Report() {
 
   const generateReport = () => {
     if (!selectedVersionData || state.selectedDataTypes.length === 0) {
-      alert('Please select a provider, version, and at least one data type');
+      setValidationError('Please select at least one data type to generate the report.');
       return;
     }
+    setValidationError(null);
     setShowPreview(true);
   };
 
@@ -189,6 +191,11 @@ export default function Report() {
                 </div>
               </div>
 
+              {validationError && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+                  {validationError}
+                </p>
+              )}
               <Button onClick={generateReport} className="w-full bg-blue-600 hover:bg-blue-700">
                 Generate Report
               </Button>

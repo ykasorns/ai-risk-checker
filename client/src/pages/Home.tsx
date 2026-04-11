@@ -47,7 +47,6 @@ export default function Home() {
 
         {/* Risk Assessment Tool */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Risk Assessment Tool</h2>
           <RiskAssessmentTool />
         </section>
 
