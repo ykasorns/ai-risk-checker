@@ -18,5 +18,12 @@
   "https://learn.microsoft.com/en-us/copilot/commercial-data-protection": "BLOCKED",
   "https://www.microsoft.com/en-us/trust-center": "e11586b0b2cfd2935d45f3c36b57bbf39bceabcc2d27b1c646623a059e5743a9",
   "https://www.microsoft.com/en-us/servicesagreement/": "ecea57aac309a44f1c88646a777ac514175ab3c35f05b7d5cc968694ee925302",
-  "https://learn.microsoft.com/en-us/compliance/": "95d21c80bca7ded4ee80a77439f08b3bf9b281e3c4514eca8568e6b50c1a5520"
+  "https://learn.microsoft.com/en-us/compliance/": "95d21c80bca7ded4ee80a77439f08b3bf9b281e3c4514eca8568e6b50c1a5520",
+  "https://x.ai/legal/privacy-policy": "BLOCKED",
+  "https://x.ai/legal/faq": "BLOCKED",
+  "https://docs.x.ai/developers/faq/security": "3509c3ef8604c855cac9c96111a8075ee1d15c01966162b8cd0f9efb4b926646",
+  "https://help.x.com/en/using-x/about-grok": "BLOCKED",
+  "https://qwen.ai/privacypolicy": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "https://www.alibabacloud.com/help/en/model-studio/qwen-api-reference/": "fc5266c87ca85cb56138fc54581defb6a9f6ce58959a1f3fbad6fac179293753",
+  "https://qwenlm.github.io/qwen-code-docs/en/users/support/tos-privacy/": "2ee95328f4b7f4226d916caf2509db3fcc6103561a99e579a9a9acf57dc07455"
 }
