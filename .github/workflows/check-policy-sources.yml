@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
 
     steps:
       - name: Checkout repository
@@ -24,22 +25,51 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Check policy URLs and update dates
+      - name: Check policy URLs and detect content changes
         id: check
         run: node scripts/check-policy-sources.mjs
         continue-on-error: true
 
-      - name: Commit updated dates (if changed)
+      - name: Commit updated dates and hashes (if changed)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git diff --quiet && echo "No changes to commit." || (
-            git add client/src/lib/data/aiProvidersData.ts &&
+            git add client/src/lib/data/aiProvidersData.ts scripts/policy-hashes.json &&
             git commit -m "chore: update policy source lastChecked dates to $(date +%Y-%m-%d) [skip ci]" &&
             git push
           )
 
+      - name: Open GitHub Issue for changed policies
+        if: steps.check.outcome == 'failure' && steps.check.conclusion == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f scripts/policy-changes.txt ]; then
+            CHANGED_URLS=$(cat scripts/policy-changes.txt)
+            EXIT_CODE=${{ steps.check.outputs.exit_code }}
+
+            BODY="## Policy Content Changes Detected
+
+          The monthly policy check found that one or more AI provider policy pages have changed their content since last month.
+
+          **Changed URLs:**
+          $(echo "$CHANGED_URLS" | sed 's/^/- /')
+
+          **Action required:**
+          1. Visit each URL above and review what changed
+          2. Update the relevant provider data in \`client/src/lib/data/aiProvidersData.ts\` if risk levels or compliance info changed
+          3. Close this issue once reviewed
+
+          *This issue was opened automatically by the [Check Policy Sources](../actions/workflows/check-policy-sources.yml) workflow on $(date +%Y-%m-%d).*"
+
+            gh issue create \
+              --title "⚠️ Policy changes detected — $(date +%Y-%m-%d)" \
+              --body "$BODY" \
+              --label "policy-change"
+          fi
+
       - name: Report unreachable URLs
         if: steps.check.outcome == 'failure'
         run: |
-          echo "::warning::One or more policy URLs were unreachable. Check the logs above and update the data manually."
+          echo "::warning::One or more policy URLs were unreachable or changed. Check the logs and the opened issue."

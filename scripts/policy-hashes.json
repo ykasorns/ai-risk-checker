@@ -1,0 +1,22 @@
+{
+  "https://openai.com/policies/row-privacy-policy/": "BLOCKED",
+  "https://openai.com/policies/terms-of-use/": "BLOCKED",
+  "https://openai.com/enterprise-privacy/": "BLOCKED",
+  "https://openai.com/business-data/": "BLOCKED",
+  "https://trust.openai.com/": "4f834a3e699fae4bb1b53b96b8d09408d39d5838e840da40f6d4656d36d66182",
+  "https://support.google.com/gemini/answer/13594961": "4678e6879fac5c5f916f640bed4311efebd7022aca57f52de40f68e9515c83ae",
+  "https://policies.google.com/privacy": "823b3fea7ca180db52377132cbcd1eb709bd78cddaef1bb3c5f83c4503ef4768",
+  "https://workspace.google.com/intl/en/terms/user_features.html": "f4065782732fe38127ef6a25cfbced2d6fa52a454630dc4f86d8180d4389ca10",
+  "https://cloud.google.com/security": "cbab8107b06f781cab88f57cb88c715580983e29c01f0f87661bb6c8ed569e46",
+  "https://policies.google.com/terms": "49c8cde4dd95172e6faaf60450ab12aa08f0b28bd03a64e10827e4a9e98120ca",
+  "https://www.anthropic.com/legal/privacy": "8be5475dff794c16bb90e3f6df88ea4dd28d3d2d64d97f321177a36a4a6e1045",
+  "https://www.anthropic.com/news/updates-to-our-consumer-terms": "482bf4d4c91b895c5a688e3303e38819131a93570c3faef30bab901a856c2384",
+  "https://trust.anthropic.com/": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "https://www.anthropic.com/legal/aup": "e7167818761d0480c91310ff1266b94dd91aa1bf415d59009abf74cb3f385de3",
+  "https://www.anthropic.com/legal/commercial-terms": "abcae5797217ea6a40c8f5c6830858a7cf55c7a52973e017bcc4ebec48803d41",
+  "https://privacy.microsoft.com/en-us/privacystatement": "dc87346f10a646b4a591b387924b7e9df94fa84e417d7943ff96e743ff4c2ddc",
+  "https://learn.microsoft.com/en-us/copilot/commercial-data-protection": "BLOCKED",
+  "https://www.microsoft.com/en-us/trust-center": "e11586b0b2cfd2935d45f3c36b57bbf39bceabcc2d27b1c646623a059e5743a9",
+  "https://www.microsoft.com/en-us/servicesagreement/": "ecea57aac309a44f1c88646a777ac514175ab3c35f05b7d5cc968694ee925302",
+  "https://learn.microsoft.com/en-us/compliance/": "95d21c80bca7ded4ee80a77439f08b3bf9b281e3c4514eca8568e6b50c1a5520"
+}
