@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import { NotificationCenter } from './NotificationCenter';
 
 export function MainNavigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,9 +15,6 @@ export function MainNavigation() {
     { label: 'Report Generator', path: '/report' },
     { label: 'Compare', path: '/comparison' },
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'History', path: '/history' },
-    { label: 'Profiles', path: '/profiles' },
-    { label: 'Export', path: '/export' },
     { label: 'Policy Sources', path: '/sources' },
   ];
 
@@ -49,11 +45,6 @@ export function MainNavigation() {
                 {item.label}
               </Link>
             ))}
-          </div>
-
-          {/* Notification Center */}
-          <div className="hidden md:block">
-            <NotificationCenter />
           </div>
 
           {/* Mobile Menu Button */}
